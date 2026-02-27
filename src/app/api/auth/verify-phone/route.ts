@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import dbConnect from '@/lib/dbConnect';
+import User from '@/models/User';
+import OTP from '@/models/OTP';
+import { verifyToken } from '@/lib/jwt';
+import { otpSchema } from '@/lib/validators/user';
+
+export async function POST(req: Request) {
+   try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get('accessToken')?.value;
+
+      if (!token) {
+         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const payload = verifyToken(token);
+      if (!payload) {
+         return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+      }
+
+      await dbConnect();
+      const body = await req.json();
+
+      const { phone, otp } = body;
+      if (!phone) return NextResponse.json({ error: "Phone required" }, { status: 400 });
+
+      const result = otpSchema.safeParse({ otp });
+      if (!result.success) {
+         return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+      }
+
+      const validOTP = await OTP.findOne({
+         phone,
+         otp,
+         type: 'verification',
+         expiresAt: { $gt: new Date() }
+      });
+
+      if (!validOTP) {
+         return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 400 });
+      }
+
+      // Update User
+      const user = await User.findByIdAndUpdate(payload.userId, {
+         isPhoneVerified: true,
+         kycStatus: 'pending' // Move to pending review by admin
+      }, { new: true });
+
+      if (!user) {
+         return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      // Delete used OTP
+      await OTP.deleteMany({ phone, type: 'verification' });
+
+      return NextResponse.json({
+         message: "Phone verified successfully. Account pending approval.",
+         user
+      });
+
+   } catch (error: any) {
+      console.error("Verify Phone Error:", error);
+      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+   }
+}
