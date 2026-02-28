@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import dbConnect from '@/lib/dbConnect';
 import Booking from '@/models/Booking';
 import Hoarding from '@/models/Hoarding';
 import { razorpay } from '@/lib/razorpay';
-import { verifyToken } from '@/lib/jwt';
+import { verifyAccessToken } from '@/lib/jwt';
 
 export async function POST(req: Request) {
   try {
-    const headersList = await headers();
-    const authHeader = headersList.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('accessToken')?.value;
+
+    if (!accessToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(' ')[1];
-    const payload = verifyToken(token);
+    const payload = verifyAccessToken(accessToken);
     if (!payload) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     const body = await req.json();
@@ -43,8 +43,8 @@ export async function POST(req: Request) {
       orderId: order.id
     });
 
-    return NextResponse.json({ 
-      orderId: order.id, 
+    return NextResponse.json({
+      orderId: order.id,
       bookingId: booking._id,
       amount: options.amount,
       currency: options.currency

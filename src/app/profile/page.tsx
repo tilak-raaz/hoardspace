@@ -218,7 +218,7 @@ export default function ProfilePage() {
                     <AlertCircle size={14} />
                   )}
                   {user.kycStatus === "not_submitted"
-                    ? "KYC Pending"
+                    ? "KYC Not Submitted"
                     : user.kycStatus.charAt(0).toUpperCase() +
                       user.kycStatus.slice(1)}
                 </span>
