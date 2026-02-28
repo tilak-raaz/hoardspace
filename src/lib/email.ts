@@ -175,7 +175,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<Ema
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://hoardspace.com/profile" style="display: inline-block; background: #5b40e6; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Complete Your Profile</a>
+            <a href="https://hoardspace.in/profile" style="display: inline-block; background: #5b40e6; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Complete Your Profile</a>
           </div>
           
           <p style="font-size: 14px; color: #777; margin-top: 30px;">Need help? Our support team is here for you at <a href="mailto:support@hoardspace.com" style="color: #5b40e6;">support@hoardspace.com</a></p>
