@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
         const clientId = process.env.GOOGLE_CLIENT_ID;
         const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-        const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
         if (!clientId || !clientSecret) {
