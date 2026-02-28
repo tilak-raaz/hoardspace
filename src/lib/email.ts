@@ -1,7 +1,8 @@
 import { Resend } from 'resend';
 
 const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = process.env.EMAIL_FROM || 'HoardSpace <onboarding@resend.dev>';
+const authFromEmail = process.env.EMAIL_FROM_AUTH || 'HoardSpace Auth <auth@hoardspace.in>';
+const generalFromEmail = process.env.EMAIL_FROM_GENERAL || 'HoardSpace <hello@hoardspace.in>';
 
 let resendClient: Resend | null = null;
 
@@ -21,6 +22,7 @@ export interface EmailOptions {
     subject: string;
     html: string;
     text?: string;
+    from?: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     try {
         // If Resend is not configured, log to console (development mode)
         if (!resendClient) {
+            console.log(`[MOCK EMAIL] From: ${options.from || generalFromEmail}`);
             console.log(`[MOCK EMAIL] To: ${options.to}`);
             console.log(`[MOCK EMAIL] Subject: ${options.subject}`);
             console.log(`[MOCK EMAIL] Body: ${options.text || options.html}`);
@@ -45,7 +48,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
 
         // Send real email via Resend
         const { data, error } = await resendClient.emails.send({
-            from: fromEmail,
+            from: options.from || generalFromEmail,
             to: options.to,
             subject: options.subject,
             html: options.html,
@@ -135,6 +138,7 @@ If you didn't request this code, please ignore this email.
         subject: 'Verify Your Email - HoardSpace',
         html,
         text,
+        from: authFromEmail,
     });
 }
 
@@ -190,5 +194,6 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<Ema
         to: email,
         subject: 'Welcome to HoardSpace! 🎉',
         html,
+        from: generalFromEmail,
     });
 }
